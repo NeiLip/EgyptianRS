@@ -179,7 +179,7 @@ public class GameHandler : MonoBehaviour
     /// 
     /// <param name="playerNum"> player number </param>
     /// <param name="lastCardVal"> value of last card used </param>
-    public static void GameTurn(int playerNum, int lastCardVal) {
+    public void GameTurn(int playerNum, int lastCardVal) {
         if (playerNum == 1) { // Player turn
             bool tookDeck = false;
             //Took Jocker
@@ -191,15 +191,17 @@ public class GameHandler : MonoBehaviour
                 deckPlayerTexts[2].text = "";
                 deckPlayerTexts[3].text = "";
 
-                
-                //Who will take the deck?
-                if (gameDeck[0].GetValue() >= 11) {
-                    TakeGameDeck(1); // Player 1 gets the Deck
-                    tookDeck = true;
-                }
-                if (tookDeck == false) {
-                    TakeGameDeck(2); // Player 2 gets the Deck
-                }
+                //Waits 2 secs
+                StartCoroutine(Coroutine(1, 2, 1));
+
+                ////Who will take the deck?
+                //if (gameDeck[0].GetValue() >= 11) {
+                //    TakeGameDeck(1); // Player 1 gets the Deck
+                //    tookDeck = true;
+                //}
+                //if (tookDeck == false) {
+                //    TakeGameDeck(2); // Player 2 gets the Deck
+                //}
             }
 
             //Took Ace
@@ -214,17 +216,18 @@ public class GameHandler : MonoBehaviour
                 deckPlayerTexts[2].text = gameDeck[2].ToString();
                 deckPlayerTexts[3].text = gameDeck[3].ToString();
 
-                 
+                //Waits 2 secs
+                StartCoroutine(Coroutine(1, 2, 4));
 
-                for (int i = 0; i < 4; i++) {
-                    if (gameDeck[i].GetValue() >= 11) {
-                        TakeGameDeck(1);
-                        tookDeck = true;
-                    }
-                }
-                if (tookDeck == false) {
-                    TakeGameDeck(2); // Player 2 gets the Deck
-                }
+                //for (int i = 0; i < 4; i++) {
+                //    if (gameDeck[i].GetValue() >= 11) {
+                //        TakeGameDeck(1);
+                //        tookDeck = true;
+                //    }
+                //}
+                //if (tookDeck == false) {
+                //    TakeGameDeck(2); // Player 2 gets the Deck
+                //}
             }
 
 
@@ -237,15 +240,19 @@ public class GameHandler : MonoBehaviour
                 deckPlayerTexts[1].text = gameDeck[1].ToString();
                 deckPlayerTexts[2].text = "";
                 deckPlayerTexts[3].text = "";
-                for (int i = 0; i < 2; i++) {
-                    if (gameDeck[i].GetValue() >= 11) {
-                        TakeGameDeck(1);
-                        tookDeck = true;
-                    }
-                }
-                if (tookDeck == false) {
-                    TakeGameDeck(2); // Player 2 gets the Deck
-                }
+
+                //Waits 2 secs
+                StartCoroutine(Coroutine(1, 2, 2));
+
+                //for (int i = 0; i < 2; i++) {
+                //    if (gameDeck[i].GetValue() >= 11) {
+                //        TakeGameDeck(1);
+                //        tookDeck = true;
+                //    }
+                //}
+                //if (tookDeck == false) {
+                //    TakeGameDeck(2); // Player 2 gets the Deck
+                //}
             }
             //Took King
             else if (lastCardVal == 13) {
@@ -258,17 +265,18 @@ public class GameHandler : MonoBehaviour
                 deckPlayerTexts[2].text = gameDeck[2].ToString();
                 deckPlayerTexts[3].text = "";
 
-                
+                //Waits 2 secs
+                StartCoroutine(Coroutine(1, 2, 3));
 
-                for (int i = 0; i < 3; i++) {
-                    if (gameDeck[i].GetValue() >= 11) {
-                        TakeGameDeck(1);
-                        tookDeck = true;
-                    }
-                }
-                if (tookDeck == false) {
-                    TakeGameDeck(2); // Player 2 gets the Deck
-                }
+                //for (int i = 0; i < 3; i++) {
+                //    if (gameDeck[i].GetValue() >= 11) {
+                //        TakeGameDeck(1);
+                //        tookDeck = true;
+                //    }
+                //}
+                //if (tookDeck == false) {
+                //    TakeGameDeck(2); // Player 2 gets the Deck
+                //}
             }
 
             // Took card between 2 and 10
@@ -295,16 +303,18 @@ public class GameHandler : MonoBehaviour
                 deckCompTexts[2].text = "";
                 deckCompTexts[3].text = "";
 
+                StartCoroutine(Coroutine(2, 1, 1));
 
-                if (gameDeck[0].GetValue() >= 11) {
-                    TakeGameDeck(2);
-                    tookDeck = true;
 
-                }
+                //if (gameDeck[0].GetValue() >= 11) {
+                //    TakeGameDeck(2);
+                //    tookDeck = true;
 
-                if (tookDeck == false) {
-                    TakeGameDeck(1); // Player 2 gets the Deck
-                }
+                //}
+
+                //if (tookDeck == false) {
+                //    TakeGameDeck(1); // Player 2 gets the Deck
+                //}
 
             }
 
@@ -320,17 +330,18 @@ public class GameHandler : MonoBehaviour
                 deckCompTexts[2].text = gameDeck[2].ToString();
                 deckCompTexts[3].text = gameDeck[3].ToString();
 
+                StartCoroutine(Coroutine(2, 1, 4));
 
-                for (int i = 0; i < 4; i++) {
-                    if (gameDeck[i].GetValue() >= 11) {
-                        TakeGameDeck(2);
-                        tookDeck = true;
-                    }
-                }
+                //for (int i = 0; i < 4; i++) {
+                //    if (gameDeck[i].GetValue() >= 11) {
+                //        TakeGameDeck(2);
+                //        tookDeck = true;
+                //    }
+                //}
 
-                if (tookDeck == false) {
-                    TakeGameDeck(1); // Player 2 gets the Deck
-                }
+                //if (tookDeck == false) {
+                //    TakeGameDeck(1); // Player 2 gets the Deck
+                //}
             }
 
             //Took Queen
@@ -343,15 +354,18 @@ public class GameHandler : MonoBehaviour
                 deckCompTexts[2].text = "";
                 deckCompTexts[3].text = "";
 
-                for (int i = 0; i < 2; i++) {
-                    if (gameDeck[i].GetValue() >= 11) {
-                        TakeGameDeck(2);
-                        tookDeck = true;
-                    }
-                }
-                if (tookDeck == false) {
-                    TakeGameDeck(1); // Player 2 gets the Deck
-                }
+
+                StartCoroutine(Coroutine(2, 1, 2));
+
+                //for (int i = 0; i < 2; i++) {
+                //    if (gameDeck[i].GetValue() >= 11) {
+                //        TakeGameDeck(2);
+                //        tookDeck = true;
+                //    }
+                //}
+                //if (tookDeck == false) {
+                //    TakeGameDeck(1); // Player 2 gets the Deck
+                //}
             }
 
             //Took King
@@ -365,15 +379,17 @@ public class GameHandler : MonoBehaviour
                 deckCompTexts[2].text = gameDeck[2].ToString();
                 deckCompTexts[3].text = "";
 
-                for (int i = 0; i < 3; i++) {
-                    if (gameDeck[i].GetValue() >= 11) {
-                        TakeGameDeck(2);
-                        tookDeck = true;
-                    }
-                }
-                if (tookDeck == false) {
-                    TakeGameDeck(1); // Player 2 gets the Deck
-                }
+                StartCoroutine(Coroutine(2, 1, 3));
+
+                //for (int i = 0; i < 3; i++) {
+                //    if (gameDeck[i].GetValue() >= 11) {
+                //        TakeGameDeck(2);
+                //        tookDeck = true;
+                //    }
+                //}
+                //if (tookDeck == false) {
+                //    TakeGameDeck(1); // Player 2 gets the Deck
+                //}
             }
 
             // Took card between 2 and 10
@@ -503,12 +519,24 @@ public class GameHandler : MonoBehaviour
 
 
 
-    private static IEnumerator Coroutine() {
+    private static IEnumerator Coroutine(int curPlayer, int otherPlayer, int numOfCardsToCheck) {
         Debug.Log("Start courtime: ");
 
         //yield on a new YieldInstruction that waits for 5 seconds.
         yield return new WaitForSeconds(2);
 
+
+        bool tookDeck = false;
+        //Who will take the deck?
+        for (int i = 0; i < numOfCardsToCheck; i++) {
+            if (gameDeck[i].GetValue() >= 11) {
+                TakeGameDeck(curPlayer); // Player 1 gets the Deck
+                tookDeck = true;
+            }
+        }
+        if (tookDeck == false) {
+            TakeGameDeck(otherPlayer); // Player 2 gets the Deck
+        }
         Debug.Log("End courtime: ");
     }
 }
