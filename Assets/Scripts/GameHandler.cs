@@ -144,7 +144,6 @@ public class GameHandler : MonoBehaviour
         deckCompTexts[3].text = "";
     }
     private static void ClearTexts(int player, int textsToClear) {
-
         if (player == 1) {
             switch (textsToClear) {
                 case 1:
@@ -194,9 +193,6 @@ public class GameHandler : MonoBehaviour
             }
         }       
     }
-
-
-
 
 
     //When called whoGetsIt gets the whole game deck
@@ -441,8 +437,6 @@ public class GameHandler : MonoBehaviour
                 UseCard(curPlayer);
                 deckPlayerTexts[i].text = gameDeck[0].ToString();
 
-              //  yield return new WaitForSeconds(2);
-
                 if (gameDeck[0].GetValue() >= 11) {
                     yield return new WaitForSeconds(1f);
                     TakeGameDeck(curPlayer); // Player 1 gets the Deck
@@ -464,8 +458,6 @@ public class GameHandler : MonoBehaviour
             for (int i = 0; i < numOfCardsToCheck; i++) {
                 UseCard(curPlayer);
                 deckCompTexts[i].text = gameDeck[0].ToString();
-
-              //  yield return new WaitForSeconds(2);
 
                 if (gameDeck[0].GetValue() >= 11) {
                     yield return new WaitForSeconds(1f);
