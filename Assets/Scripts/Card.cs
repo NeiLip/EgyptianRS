@@ -5,17 +5,17 @@ using UnityEngine;
 public class Card {
 
 
- 
-
     private int value;
     private string suit;
 
 
+    //Creating 'Null' card
     public Card() {
         this.value = 0;
         this.suit = "NULL CARD";
     }
 
+    //Creating Card 
     public Card(int value, string suit) {
         this.suit = suit;
         this.value = value;
