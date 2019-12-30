@@ -8,19 +8,19 @@ public class MouseOnBtn : MonoBehaviour
 {
     public GameObject button;
 
-    public void OnMouseDown() {
+    //public void OnMouseDown() {
         
-        switch (button.name) {
-            case "PlayerBtn":
+    //    switch (button.name) {
+    //        case "PlayerBtn":
                
-                break;
-            case "StartBtn":
-                GameHandler.StartGame();
-                break;
-            default:
-                break;
-        }
-    }
+    //            break;
+    //        case "StartBtn":
+    //            GameHandler.StartGame();
+    //            break;
+    //        default:
+    //            break;
+    //    }
+    //}
 
     private void OnMouseEnter() {
           Debug.Log("Mouse Over!!!sfddsf");

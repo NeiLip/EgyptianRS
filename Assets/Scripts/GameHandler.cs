@@ -51,7 +51,7 @@ public class GameHandler : MonoBehaviour
 
     
     //Shuffle a deck
-    private static List<Card> ShuffleDeck(List<Card> deck) {
+    private List<Card> ShuffleDeck(List<Card> deck) {
        // Random random = new Random();
         
         int n = deck.Count;
@@ -69,7 +69,7 @@ public class GameHandler : MonoBehaviour
 
 
     //Building a new Deck
-    private static void BuildStartingDeck() {
+    private void BuildStartingDeck() {
         int curPlace = 0;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 13; j++) {
@@ -82,7 +82,7 @@ public class GameHandler : MonoBehaviour
 
     // On game Start
     // Shuffle main deck and then split to hands and gets all Text GameObjects
-    public static void StartGame() {
+    public void StartGame() {
         BuildStartingDeck();
 
         List<Card> shuffeledGameDeck;
@@ -132,7 +132,7 @@ public class GameHandler : MonoBehaviour
 
 
     // Clears Player's and Computer's playground
-    private static void ClearAllTexts() {
+    private void ClearAllTexts() {
         deckPlayerTexts[0].text = "";
         deckPlayerTexts[1].text = "";
         deckPlayerTexts[2].text = "";
@@ -143,7 +143,7 @@ public class GameHandler : MonoBehaviour
         deckCompTexts[2].text = "";
         deckCompTexts[3].text = "";
     }
-    private static void ClearTexts(int player, int textsToClear) {
+    private void ClearTexts(int player, int textsToClear) {
         if (player == 1) {
             switch (textsToClear) {
                 case 1:
