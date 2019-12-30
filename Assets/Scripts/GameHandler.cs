@@ -441,16 +441,18 @@ public class GameHandler : MonoBehaviour
                 UseCard(curPlayer);
                 deckPlayerTexts[i].text = gameDeck[0].ToString();
 
-                yield return new WaitForSeconds(2);
+              //  yield return new WaitForSeconds(2);
 
                 if (gameDeck[0].GetValue() >= 11) {
-
+                    yield return new WaitForSeconds(1f);
                     TakeGameDeck(curPlayer); // Player 1 gets the Deck
                     tookDeck = true;
                     break;
                 }
+                yield return new WaitForSeconds(0.2f);
             }
             if (tookDeck == false) {
+                yield return new WaitForSeconds(1f);
                 TakeGameDeck(otherPlayer); // Player 2 gets the Deck
             }
         }
@@ -463,15 +465,18 @@ public class GameHandler : MonoBehaviour
                 UseCard(curPlayer);
                 deckCompTexts[i].text = gameDeck[0].ToString();
 
-                yield return new WaitForSeconds(2);
+              //  yield return new WaitForSeconds(2);
 
                 if (gameDeck[0].GetValue() >= 11) {
+                    yield return new WaitForSeconds(1f);
                     TakeGameDeck(curPlayer); // Player 2 gets the Deck
                     tookDeck = true;
                     break;
                 }
+                yield return new WaitForSeconds(0.2f);
             }
             if (tookDeck == false) {
+                yield return new WaitForSeconds(1f);
                 TakeGameDeck(otherPlayer); // Player 1 gets the Deck
             }
         }
