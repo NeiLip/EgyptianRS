@@ -586,7 +586,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1609658179}
-  - component: {fileID: 1609658178}
   - component: {fileID: 1609658177}
   m_Layer: 0
   m_Name: WindowHandler
@@ -608,18 +607,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _winningNameText: {fileID: 455186645}
---- !u!114 &1609658178
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1609658176}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abab3a13c3f084c1e967b3851b96b5de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &1609658179
 Transform:
   m_ObjectHideFlags: 0

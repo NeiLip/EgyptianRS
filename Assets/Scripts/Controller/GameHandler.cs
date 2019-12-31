@@ -7,88 +7,51 @@ using System;
 
 public class GameHandler : MonoBehaviour
 {
+
+    public MainGameView MainGameViewRef;
     //STATICs HERE:
     //private static int[] startValues = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+    public int PlayerAmount = 2;
     private string[] _suits = { "D", "H", "C", "S" };
-    private const int CARDS_PER_SUIT = 2;
+    private const int CARDS_PER_SUIT = 13;
     private int TotalCards {
         get {
             return _suits.Length * CARDS_PER_SUIT;
         }
     }
-    private Card LastCard {
-        get {
-            Card retVal = null;
-            if(_gameDeck.Count > 0) {
-                retVal = _gameDeck[0];
-            }
-            return retVal;
-        }
-    }
-    private int LastCardVal {
-        get {
-            int retVal = 0;
-            if(LastCard != null) {
-                retVal = LastCard.GetValue();
-            }
-            return retVal;
-        }
-    }
-
-    private List<List<Card>> _playersCardsList;
-    private List<Card> _gameDeck; // Game's deck (all cards that players put on field)
-
-    private List<Card> _startGameDeck; //Unshuffled deck of 52 cards
-
-    //  private static Text[] playersTexts;
-    public PlayersPlaygroundContainer[] PlayersPlaygroundContainers;
-
-    [Serializable]
-    public class PlayersPlaygroundContainer {
-        public Text[] PlayersPlaygroundTexts;
-    }
-
-    public Text WhosTurnText;
-    public Text[] PlayersCardsCountersTexts; // Array of texts for counters
-    public Text GameDeckCardsCounterText;
-
-    public Text[] PlayersWinsCountersTexts;
-
 
     private bool _isGameStarted;
-    private int _whosTurnIsIt; //Whos turn is it (0 for player, 1 for Comp)
-
+    private bool _isGameRestarted;
     private bool _waitingForCoroutine; //If true, everything is disabled. If false, player can play a turn
 
-    private string _winningPlayer;
 
-    private bool _isGameRestarted;
-
+    private GameData _gameData;
 
     //Initializig variables
     private void Awake() {
+        MainGameViewRef.ERestartPressed += RestartGameBtn;
+        MainGameViewRef.EPlayTurnPressed += PlayTurnBtn;
+        DontDestroyOnLoad(gameObject);
         _waitingForCoroutine = false;
-        InitializeStats();
+        InitializeGameData();
 
-        UpdateCounters();
+        //Getting winning counter
+        //if (GameStats.WinningCounters == null) {
+        //    GameStats.WinningCounters = new int[2];
+        //}
+        for (int i = 0; i < PlayerAmount; i++) {
+            if (PlayerPrefs.HasKey(i.ToString())) {
+                GameStats.WinningCounters[i] = PlayerPrefs.GetInt(i.ToString());
+            }
+        }
     }
 
-
-    private void InitializeStats() {
+    private void InitializeGameData() {
         _isGameRestarted = true;
         _isGameStarted = false;
-        _startGameDeck = new List<Card>();
-        _playersCardsList = new List<List<Card>>();
-        _playersCardsList.Add(new List<Card>());
-        _playersCardsList.Add(new List<Card>());
-        _gameDeck = new List<Card>();
-
-
-        _whosTurnIsIt = 0;
-      
+        _gameData = new GameData(PlayerAmount);
+        MainGameViewRef.UpdateView(_gameData);
     }
-
-
     
     /// Shuffle a deck
     /// <param name="deck"> Deck to shuffle </param>
@@ -105,63 +68,67 @@ public class GameHandler : MonoBehaviour
     }
 
 
-    //Building a new Deck
-    private void BuildStartingDeck() {
-        _startGameDeck.Clear();
-        for (int i = 0; i < _suits.Length; i++) { //For every type of suit (D\H\C\S)
-            for (int j = 1; j < 14; j++) { //For each value (1-13)
-                Card card = new Card(j, _suits[i]); //Creating card
-                _startGameDeck.Add(card); //Adding card to startDeck
-            }
-        }
-    }
-
     // On game Start
     // Shuffle main deck and then split to hands and gets all Text GameObjects
     public void StartGame() {
-        BuildStartingDeck();
-        List<Card> shuffeledGameDeck;
-        shuffeledGameDeck = ShuffleDeck(_startGameDeck);
+        //BuildStartingDeck();
+        List<Card> shuffeledGameDeck = new List<Card>() ;
+
+        for (int i = 0; i < _suits.Length; i++) { //For every type of suit (D\H\C\S)
+            for (int j = 1; j < 14; j++) { //For each value (1-13)
+                Card card = new Card(j, _suits[i]); //Creating card
+                shuffeledGameDeck.Add(card); //Adding card to startDeck
+            }
+        }
+        shuffeledGameDeck = ShuffleDeck(shuffeledGameDeck);
 
         // Split deck into two decks (player and comp decks)
-        int cardsPerPlayer = Mathf.FloorToInt(TotalCards / _playersCardsList.Count);
+        int cardsPerPlayer = Mathf.FloorToInt(TotalCards / PlayerAmount);
 
-        for (int i = 0; i < _playersCardsList.Count; i++) {
+        for (int i = 0; i < PlayerAmount; i++) {
             for (int j = 0; j < cardsPerPlayer; j++) {
-                _playersCardsList[i].Add(shuffeledGameDeck[j + (cardsPerPlayer * i)]);
+                Card card = shuffeledGameDeck[j + (cardsPerPlayer * i)];
+                card.OwnerPlayerID = i;
+                card.Location = Card.Locations.Player;
+                _gameData.PlayersCards[i].Add(card);
             }
         }
 
         _isGameStarted = true;
-        ClearAllPlayGroundTexts();
+        MainGameViewRef.UpdateView(_gameData);
     }
 
-
+ 
     // Clears Player's and Computer's playground
-    private void ClearAllPlayGroundTexts() {
-        for (int i = 0; i < PlayersPlaygroundContainers.Length; i++) {
-            for (int j = 0; j < PlayersPlaygroundContainers[i].PlayersPlaygroundTexts.Length; j++) {
-                PlayersPlaygroundContainers[i].PlayersPlaygroundTexts[j].text = "";
-            }
-        }
-    }
+    //private void ClearAllPlayGroundTexts() {
+    //    for (int i = 0; i < PlayersPlaygroundContainers.Length; i++) {
+    //        for (int j = 0; j < PlayersPlaygroundContainers[i].PlayersPlaygroundTexts.Length; j++) {
+    //            PlayersPlaygroundContainers[i].PlayersPlaygroundTexts[j].text = "";
+    //        }
+    //    }
+    //}
     /// Clears specific texts
     /// <param name="player"> player to clear his playground texts </param>
-    private void ClearTexts(int player) {
-        for (int i = 0; i < PlayersPlaygroundContainers[player].PlayersPlaygroundTexts.Length; i++) {
-            PlayersPlaygroundContainers[player].PlayersPlaygroundTexts[i].text = "";
-        }
-    }
+    //private void ClearTexts(int player) {
+    //    for (int i = 0; i < PlayersPlaygroundContainers[player].PlayersPlaygroundTexts.Length; i++) {
+    //        PlayersPlaygroundContainers[player].PlayersPlaygroundTexts[i].text = "";
+    //    }
+    //}
 
 
     //When called whoGetsIt gets the whole game deck
     public void TakeGameDeck(int whoGetsIt) {
-        _playersCardsList[whoGetsIt].AddRange(_gameDeck);
-        _gameDeck.Clear();
+        for (int i = 0; i < _gameData.DeckCards.Count; i++) {
+            _gameData.DeckCards[i].Location = Card.Locations.Player;
+            _gameData.DeckCards[i].OwnerPlayerID = whoGetsIt;
+        }
+        _gameData.PlayersCards[whoGetsIt].AddRange(_gameData.DeckCards);
+        _gameData.DeckCards.Clear();
         
-        _whosTurnIsIt = whoGetsIt;
-        ClearAllPlayGroundTexts();
-        UpdateCounters();
+        _gameData.CurrentTurnPlayer = whoGetsIt;
+        //ClearAllPlayGroundTexts();
+        //   UpdateCounters();
+        MainGameViewRef.UpdateView(_gameData);
     }
 
     private int SpecialCardTurnsByCard(int card) {
@@ -193,77 +160,77 @@ public class GameHandler : MonoBehaviour
         }
 
 
-        ClearTexts(playerNum);
-        int nextPlayer = (playerNum + 1) % _playersCardsList.Count;
-        int prevPlayer = (playerNum - 1) < 0 ? _playersCardsList.Count - 1 : playerNum - 1;
-        if (LastCardVal == 1 || LastCardVal > 10) {
-            StartCoroutine(SpecialCardCoroutine(playerNum, prevPlayer, SpecialCardTurnsByCard(LastCardVal)));
+    //    ClearTexts(playerNum);
+        int nextPlayer = (playerNum + 1) % PlayerAmount;
+        int prevPlayer = (playerNum - 1) < 0 ? PlayerAmount - 1 : playerNum - 1;
+        if (_gameData.LastCardVal == 1 || _gameData.LastCardVal > 10) {
+            StartCoroutine(SpecialCardCoroutine(playerNum, prevPlayer, SpecialCardTurnsByCard(_gameData.LastCardVal)));
         } else {
             UseCard(playerNum, 0);
-            _whosTurnIsIt = nextPlayer;
+            _gameData.CurrentTurnPlayer = nextPlayer;
         }
     }
 
     //Updating counters
-    private void UpdateCounters() {
-        for (int i = 0; i < PlayersCardsCountersTexts.Length; i++) {
-            PlayersCardsCountersTexts[i].text = _playersCardsList[i].Count.ToString();
-        }
-        Debug.Log("Length: " + PlayersWinsCountersTexts.Length);
-        for (int i = 0; i < PlayersWinsCountersTexts.Length; i++) {
-            PlayersWinsCountersTexts[i].text = GameStats.WinningCounters[i].ToString();
-        }
-
-        GameDeckCardsCounterText.text = _gameDeck.Count.ToString();
-
-        WhosTurnText.text = "Player " + _whosTurnIsIt;
-    }
+    
 
     //Using one card (adding it to gameDeck and removing it from player's deck)
-    private void UseCard(int playerNum, int cardSeriesNum) {
-        if (playerNum > _playersCardsList.Count - 1) {
+    private void UseCard(int playerNum, int locationInPlayground) {
+        if (playerNum > PlayerAmount - 1) {
             Debug.LogWarning("There is no such player: " + playerNum);
             return;
         }
-        _gameDeck.Insert(0, _playersCardsList[playerNum][0]);
-        Debug.Log(string.Format("Player {0} Used: {1}", playerNum, _playersCardsList[playerNum][0].ToString()));
-        _playersCardsList[playerNum].RemoveAt(0);
-        PlayersPlaygroundContainers[playerNum].PlayersPlaygroundTexts[cardSeriesNum].text = LastCard.ToString();
-        UpdateCounters();
 
+
+
+        for (int i = 0; i < _gameData.DeckCards.Count; i++) {
+            if (_gameData.DeckCards[i].OwnerPlayerID == playerNum && _gameData.DeckCards[i].Location == Card.Locations.Playground) {
+                _gameData.DeckCards[i].Location = Card.Locations.Deck;
+            }
+        }
+       
+
+
+        Card card = _gameData.PlayersCards[playerNum][0];
+        card.IndexInPlayground = locationInPlayground;
+        card.Location = Card.Locations.Playground;
+        _gameData.DeckCards.Insert(0, card);
+        Debug.Log("!@! deckcard[0] location: " + _gameData.DeckCards[0].Location);
+        Debug.Log(string.Format("Player {0} Used: {1}", playerNum, _gameData.PlayersCards[playerNum][0]));
+        _gameData.PlayersCards[playerNum].RemoveAt(0);
+        //PlayersPlaygroundContainers[playerNum].PlayersPlaygroundTexts[cardSeriesNum].text = _gameData.LastCard.ToString();
+        //UpdateCounters();
+        MainGameViewRef.UpdateView(_gameData);
         if (CheckDuplicate()) {
             StartCoroutine(DuplicationCoroutine());
         }
+        Debug.Log("!@! deckcard[0] location: " + _gameData.DeckCards[0].Location);
     }
 
     //Check if two same cards used 
     private bool CheckDuplicate() {
-        if(_gameDeck.Count < 2) {
+        if(_gameData.DeckCards.Count < 2) {
             return false;
         }
-       
-        return LastCardVal == _gameDeck[1].GetValue();
+
+        return _gameData.LastCardVal == _gameData.DeckCards[1].value;
     }
 
-    private void Update() {
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            PlayTurnBtn();
-        }
 
-        if (Input.GetKeyDown(KeyCode.Escape)) {
-            RestartGameBtn();
-        }
-    }
 
     //If player playerNum lost
     private bool IsPlayerLost(int playerNum) {
-        return (_whosTurnIsIt == playerNum && _playersCardsList[playerNum].Count == 0);
+        return (_gameData.CurrentTurnPlayer == playerNum && _gameData.PlayersCards[playerNum].Count == 0);
     }
 
+
+    //Changing level and setting Winningcounters
     private void GameOver(int playerNum) {
-        int wonPlayerNum = (playerNum - 1) < 0 ? _playersCardsList.Count - 1 : playerNum - 1;
+
+        int wonPlayerNum = (playerNum - 1) < 0 ? PlayerAmount - 1 : playerNum - 1;
         GameStats.WinningPlayer = wonPlayerNum.ToString();
         GameStats.WinningCounters[wonPlayerNum] += 1;
+        PlayerPrefs.SetInt(wonPlayerNum.ToString(), GameStats.WinningCounters[wonPlayerNum]);
         SceneManager.LoadScene("WinScene");
     }
 
@@ -288,7 +255,7 @@ public class GameHandler : MonoBehaviour
                 break;
             }
 
-            if (_gameDeck[0].GetValue() >= 11) {
+            if (_gameData.DeckCards[0].value >= 11) {
 
                 startTime = Time.time;
                 while (!_isGameRestarted && Time.time - startTime < 1) {
@@ -344,7 +311,7 @@ public class GameHandler : MonoBehaviour
         }
  
         Debug.Log("Found Duplication!!!");
-            int rnd = UnityEngine.Random.Range(0, _playersCardsList.Count);
+            int rnd = UnityEngine.Random.Range(0, PlayerAmount);
             Debug.Log("Random Number between 0 to 1: " + rnd.ToString());
 
             //Player takes the deck
@@ -372,22 +339,22 @@ public class GameHandler : MonoBehaviour
 
             if (!_waitingForCoroutine) {
                 _isGameRestarted = false;
-                _playersCardsList[_whosTurnIsIt] = ShuffleDeck(_playersCardsList[_whosTurnIsIt]);
+                _gameData.PlayersCards[_gameData.CurrentTurnPlayer] = ShuffleDeck(_gameData.PlayersCards[_gameData.CurrentTurnPlayer]);
 
-                GameTurn(_whosTurnIsIt);
+                GameTurn(_gameData.CurrentTurnPlayer);
             }
         }
  
     }
 
     public void RestartGameBtn() {
-        InitializeStats();
-        ClearAllPlayGroundTexts();
+        InitializeGameData();
+      //  ClearAllPlayGroundTexts();
         if (!_waitingForCoroutine) {
             _isGameRestarted = false;
         }
         StartGame();
-        UpdateCounters();
+     //   UpdateCounters();
 
         Debug.Log("GAME RESTARTED");
     }

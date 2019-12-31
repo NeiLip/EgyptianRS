@@ -597,6 +597,7 @@ GameObject:
   - component: {fileID: 160894142}
   - component: {fileID: 160894141}
   - component: {fileID: 160894140}
+  - component: {fileID: 160894143}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -688,6 +689,35 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &160894143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 160894138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 134cc6fded56249a2a163c8ed7b71d87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PlayersPlaygroundContainers:
+  - PlayersPlaygroundTexts:
+    - {fileID: 997068895}
+    - {fileID: 488724816}
+    - {fileID: 1741752322}
+    - {fileID: 326224701}
+  - PlayersPlaygroundTexts:
+    - {fileID: 499295688}
+    - {fileID: 4275643}
+    - {fileID: 1033014495}
+    - {fileID: 1955636209}
+  WhosTurnText: {fileID: 551886161}
+  PlayersCardsCountersTexts:
+  - {fileID: 891241817}
+  - {fileID: 1091429620}
+  GameDeckCardsCounterText: {fileID: 279531848}
+  PlayersWinsCountersTexts: []
 --- !u!1 &279531846
 GameObject:
   m_ObjectHideFlags: 0
@@ -1700,7 +1730,6 @@ GameObject:
   m_Component:
   - component: {fileID: 887229137}
   - component: {fileID: 887229136}
-  - component: {fileID: 887229138}
   m_Layer: 0
   m_Name: GameHandler
   m_TagString: Untagged
@@ -1720,25 +1749,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b57898a3612dd44c68c243159fe92e1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayersPlaygroundContainers:
-  - PlayersPlaygroundTexts:
-    - {fileID: 997068895}
-    - {fileID: 488724816}
-    - {fileID: 1741752322}
-    - {fileID: 326224701}
-  - PlayersPlaygroundTexts:
-    - {fileID: 499295688}
-    - {fileID: 4275643}
-    - {fileID: 1033014495}
-    - {fileID: 1955636209}
-  WhosTurnText: {fileID: 551886161}
-  PlayersCardsCountersTexts:
-  - {fileID: 891241817}
-  - {fileID: 1091429620}
-  GameDeckCardsCounterText: {fileID: 279531848}
-  PlayersWinsCountersTexts:
-  - {fileID: 1208067898}
-  - {fileID: 1293531823}
+  MainGameViewRef: {fileID: 160894143}
+  PlayerAmount: 2
 --- !u!4 &887229137
 Transform:
   m_ObjectHideFlags: 0
@@ -1753,18 +1765,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &887229138
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 887229135}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abab3a13c3f084c1e967b3851b96b5de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &891241815
 GameObject:
   m_ObjectHideFlags: 0
