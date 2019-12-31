@@ -10,7 +10,7 @@ public class GameHandler : MonoBehaviour
     //STATICs HERE:
     //private static int[] startValues = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
     private string[] _suits = { "D", "H", "C", "S" };
-    private const int CARDS_PER_SUIT = 13;
+    private const int CARDS_PER_SUIT = 2;
     private int TotalCards {
         get {
             return _suits.Length * CARDS_PER_SUIT;
@@ -52,6 +52,9 @@ public class GameHandler : MonoBehaviour
     public Text[] PlayersCardsCountersTexts; // Array of texts for counters
     public Text GameDeckCardsCounterText;
 
+    public Text[] PlayersWinsCountersTexts;
+
+
     private bool _isGameStarted;
     private int _whosTurnIsIt; //Whos turn is it (0 for player, 1 for Comp)
 
@@ -66,6 +69,8 @@ public class GameHandler : MonoBehaviour
     private void Awake() {
         _waitingForCoroutine = false;
         InitializeStats();
+
+        UpdateCounters();
     }
 
 
@@ -80,7 +85,7 @@ public class GameHandler : MonoBehaviour
 
 
         _whosTurnIsIt = 0;
-        _winningPlayer = "Player 1";
+      
     }
 
 
@@ -183,7 +188,7 @@ public class GameHandler : MonoBehaviour
     public void GameTurn(int playerNum) {
         //Checking winning condition
         if (IsPlayerLost(playerNum)) {
-            GameOver();
+            GameOver(playerNum);
             return;
         }
 
@@ -204,6 +209,11 @@ public class GameHandler : MonoBehaviour
         for (int i = 0; i < PlayersCardsCountersTexts.Length; i++) {
             PlayersCardsCountersTexts[i].text = _playersCardsList[i].Count.ToString();
         }
+        Debug.Log("Length: " + PlayersWinsCountersTexts.Length);
+        for (int i = 0; i < PlayersWinsCountersTexts.Length; i++) {
+            PlayersWinsCountersTexts[i].text = GameStats.WinningCounters[i].ToString();
+        }
+
         GameDeckCardsCounterText.text = _gameDeck.Count.ToString();
 
         WhosTurnText.text = "Player " + _whosTurnIsIt;
@@ -250,7 +260,10 @@ public class GameHandler : MonoBehaviour
         return (_whosTurnIsIt == playerNum && _playersCardsList[playerNum].Count == 0);
     }
 
-    private void GameOver() {
+    private void GameOver(int playerNum) {
+        int wonPlayerNum = (playerNum - 1) < 0 ? _playersCardsList.Count - 1 : playerNum - 1;
+        GameStats.WinningPlayer = wonPlayerNum.ToString();
+        GameStats.WinningCounters[wonPlayerNum] += 1;
         SceneManager.LoadScene("WinScene");
     }
 
@@ -267,7 +280,7 @@ public class GameHandler : MonoBehaviour
 
         for (int i = 0; i < numOfCardsToCheck; i++) {
             if (IsPlayerLost(curPlayer)) {
-                GameOver();
+                GameOver(curPlayer);
                 break;
             }
             UseCard(curPlayer, i);
