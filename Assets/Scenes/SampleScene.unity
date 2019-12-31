@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.3731193, g: 0.38073996, b: 0.3587269, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1084,7 +1084,7 @@ GameObject:
   - component: {fileID: 551886162}
   - component: {fileID: 551886161}
   m_Layer: 5
-  m_Name: WhosTurn
+  m_Name: WhosTurnText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1140,7 +1140,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player
+  m_Text: 
 --- !u!222 &551886162
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1390,6 +1390,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b57898a3612dd44c68c243159fe92e1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PlayersPlaygroundContainers:
+  - PlayersPlaygroundTexts:
+    - {fileID: 997068895}
+    - {fileID: 488724816}
+    - {fileID: 1741752322}
+    - {fileID: 326224701}
+  - PlayersPlaygroundTexts:
+    - {fileID: 499295688}
+    - {fileID: 4275643}
+    - {fileID: 1033014495}
+    - {fileID: 1955636209}
+  WhosTurnText: {fileID: 551886161}
+  PlayersCardsCountersTexts:
+  - {fileID: 891241817}
+  - {fileID: 1091429620}
+  GameDeckCardsCounterText: {fileID: 279531848}
 --- !u!4 &887229137
 Transform:
   m_ObjectHideFlags: 0
@@ -1398,7 +1414,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 887229135}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10.1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 160894139}
@@ -2165,7 +2181,7 @@ GameObject:
   - component: {fileID: 1306091614}
   - component: {fileID: 1306091613}
   m_Layer: 5
-  m_Name: WhosTurnText
+  m_Name: WhosTurnHelperText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2911,7 +2927,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 
+  m_Text: Player 2
 --- !u!222 &1921321136
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3138,7 +3154,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Player
+  m_Text: Player 1
 --- !u!222 &2062891410
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -10,6 +10,7 @@ public class Card {
 
 
     //Creating 'Null' card
+    //!@!
     public Card() {
         this.value = 0;
         this.suit = "NULL CARD";
@@ -36,7 +37,7 @@ public class Card {
     public string GetSuit() {
         return this.suit;
     }
-
+    //!@!
     public string ToString() {
         return this.value.ToString() + " " + this.suit;
     }

@@ -3,48 +3,73 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System;
 
 public class GameHandler : MonoBehaviour
 {
     //STATICs HERE:
-    private static int[] startValues = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
-    private static string[] suits = {"D", "H", "C", "S" };
+    //private static int[] startValues = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+    private string[] _suits = { "D", "H", "C", "S" };
+    private const int CARDS_PER_SUIT = 13;
+    private int TotalCards {
+        get {
+            return _suits.Length * CARDS_PER_SUIT;
+        }
+    }
+    private Card LastCard {
+        get {
+            Card retVal = null;
+            if(_gameDeck.Count > 0) {
+                retVal = _gameDeck[0];
+            }
+            return retVal;
+        }
+    }
+    private int LastCardVal {
+        get {
+            int retVal = 0;
+            if(LastCard != null) {
+                retVal = LastCard.GetValue();
+            }
+            return retVal;
+        }
+    }
 
-    private static List<Card> playerDeck; // Player's deck
-    private static List<Card> compDeck; // Computer's deck
-    private static List<Card> gameDeck; // Game's deck (all cards that players put on field)
+    private List<List<Card>> _playersCardsList;
+    private List<Card> _gameDeck; // Game's deck (all cards that players put on field)
 
+    private List<Card> _startGameDeck; //Unshuffled deck of 52 cards
 
-    private static List<Card> startGameDeck; //Unshuffled deck of 52 cards
+    //  private static Text[] playersTexts;
+    public PlayersPlaygroundContainer[] PlayersPlaygroundContainers;
 
+    [Serializable]
+    public class PlayersPlaygroundContainer {
+        public Text[] PlayersPlaygroundTexts;
+    }
 
-  //  private static Text[] playersTexts; 
-    private static Text[] deckPlayerTexts; // Array of texts for players's field cards
-    private static Text[] deckCompTexts; // Array of texts for computer's field cards
+    public Text WhosTurnText;
+    public Text[] PlayersCardsCountersTexts; // Array of texts for counters
+    public Text GameDeckCardsCounterText;
 
-    private static Text whosTurnText;
+    private bool _isGameStarted;
+    private int _whosTurnIsIt; //Whos turn is it (0 for player, 1 for Comp)
 
-    private static Text[] counters; // Array of texts for counters
-
-    private static bool isGameStarted;
-    private static int whosTurnIsIt; //Whos turn is it (0 for player, 1 for Comp)
-
-    private static bool waitingForCoroutine; //If true, everything is disabled. If false, player can play a turn
+    private bool _waitingForCoroutine; //If true, everything is disabled. If false, player can play a turn
 
 
     //Initializig variables
     private void Awake() {
-        isGameStarted = false;
-        startGameDeck = new List<Card>();
-        playerDeck = new List<Card>();
-        compDeck = new List<Card>();
-        gameDeck = new List<Card>(); 
-        deckPlayerTexts = new Text[4]; // player: max cards on deck -> {card1, card2, card3, card4}
-        deckCompTexts = new Text[4]; //  computer: max cards on deck -> {card1, card2, card3, card4}
-        whosTurnIsIt = 0;
+        _isGameStarted = false;
+        _startGameDeck = new List<Card>();
+        _playersCardsList = new List<List<Card>>();
+        _playersCardsList.Add(new List<Card>());
+        _playersCardsList.Add(new List<Card>());
+        Debug.Log("!@! _playersCardsList.Count: " + _playersCardsList.Count);
+        _gameDeck = new List<Card>();
+        _whosTurnIsIt = 0;
 
-        counters = new Text[3]; //{Player, Computer, GameDeck}
-        waitingForCoroutine = false;
+        _waitingForCoroutine = false;
     }
 
 
@@ -54,7 +79,7 @@ public class GameHandler : MonoBehaviour
     /// <returns>Shuffeled deck</returns>
     private List<Card> ShuffleDeck(List<Card> deck) {
         for (int i = deck.Count - 1; i > 1; i--) {
-            int rnd = Random.Range(0,i + 1);
+            int rnd = UnityEngine.Random.Range(0,i + 1);
 
             Card value = deck[rnd];
             deck[rnd] = deck[i];
@@ -66,12 +91,10 @@ public class GameHandler : MonoBehaviour
 
     //Building a new Deck
     private void BuildStartingDeck() {
-        int curPlace = 0;
-        for (int i = 0; i < 4; i++) { //For every type of suit (D\H\C\S)
-            for (int j = 0; j < 13; j++) { //For each value (1-13)
-                Card card = new Card(startValues[j], suits[i]); //Creating card
-                startGameDeck.Add(card); //Adding card to startDeck
-                curPlace++;
+        for (int i = 0; i < _suits.Length; i++) { //For every type of suit (D\H\C\S)
+            for (int j = 1; j < 14; j++) { //For each value (1-13)
+                Card card = new Card(j, _suits[i]); //Creating card
+                _startGameDeck.Add(card); //Adding card to startDeck
             }
         }
     }
@@ -81,136 +104,62 @@ public class GameHandler : MonoBehaviour
     public void StartGame() {
         BuildStartingDeck();
         List<Card> shuffeledGameDeck;
-        shuffeledGameDeck = ShuffleDeck(startGameDeck);
+        shuffeledGameDeck = ShuffleDeck(_startGameDeck);
 
         // Split deck into two decks (player and comp decks)
-        for (int i = 0; i < 52; i++) {
-            if (i < 26) {
-                playerDeck.Add(shuffeledGameDeck[i]);
-            }
-            else {
-                compDeck.Add(shuffeledGameDeck[i]);
+        Debug.Log("!@! _playersCardsList.Count: " + _playersCardsList.Count);
+        int cardsPerPlayer = Mathf.FloorToInt(TotalCards / _playersCardsList.Count);
+
+        for (int i = 0; i < _playersCardsList.Count; i++) {
+            for (int j = 0; j < cardsPerPlayer; j++) {
+                _playersCardsList[i].Add(shuffeledGameDeck[j + (cardsPerPlayer * i)]);
             }
         }
 
-        //Setting Player PLAYGROUND TEXT
-        deckPlayerTexts[0] = GameObject.Find("CurText1").GetComponent<Text>();
-        deckPlayerTexts[1] = GameObject.Find("CurText2").GetComponent<Text>();
-        deckPlayerTexts[2] = GameObject.Find("CurText3").GetComponent<Text>();
-        deckPlayerTexts[3] = GameObject.Find("CurText4").GetComponent<Text>();
-
-
-        //Setting COMPUTER PLAYGROUND TEXT
-        deckCompTexts[0] = GameObject.Find("CompCurText1").GetComponent<Text>();
-        deckCompTexts[1] = GameObject.Find("CompCurText2").GetComponent<Text>();
-        deckCompTexts[2] = GameObject.Find("CompCurText3").GetComponent<Text>();
-        deckCompTexts[3] = GameObject.Find("CompCurText4").GetComponent<Text>();
-
-        //Setting COUNTERS TEXT
-        counters[0] = GameObject.Find("PlayerCounter").GetComponent<Text>();
-        counters[1] = GameObject.Find("CompCounter").GetComponent<Text>();
-        counters[2] = GameObject.Find("GameDeckCounter").GetComponent<Text>();
-
-
-        //Setting WHOS TURN TEXT
-        whosTurnText = GameObject.Find("WhosTurn").GetComponent<Text>();
-
-        ClearAllTexts();
+        ClearAllPlayGroundTexts();
     }
 
 
     // Clears Player's and Computer's playground
-    private void ClearAllTexts() {
-        deckPlayerTexts[0].text = "";
-        deckPlayerTexts[1].text = "";
-        deckPlayerTexts[2].text = "";
-        deckPlayerTexts[3].text = "";
-
-        deckCompTexts[0].text = "";
-        deckCompTexts[1].text = "";
-        deckCompTexts[2].text = "";
-        deckCompTexts[3].text = "";
+    private void ClearAllPlayGroundTexts() {
+        for (int i = 0; i < PlayersPlaygroundContainers.Length; i++) {
+            for (int j = 0; j < PlayersPlaygroundContainers[i].PlayersPlaygroundTexts.Length; j++) {
+                PlayersPlaygroundContainers[i].PlayersPlaygroundTexts[j].text = "";
+            }
+        }
     }
     /// Clears specific texts
     /// <param name="player"> player to clear his playground texts </param>
-    /// <param name="textsToClear"> Which texts to clear (1-4) </param>
-    private void ClearTexts(int player, int textsToClear) {
-        if (player == 1) { // Clears Player's texts
-            switch (textsToClear) {
-                case 1:
-                    deckPlayerTexts[0].text = "";
-                    break;
-                case 2:
-                    deckPlayerTexts[0].text = "";
-                    deckPlayerTexts[1].text = "";
-                    break;
-                case 3:
-                    deckPlayerTexts[0].text = "";
-                    deckPlayerTexts[1].text = "";
-                    deckPlayerTexts[2].text = "";
-                    break;
-                case 4:
-                    deckPlayerTexts[0].text = "";
-                    deckPlayerTexts[1].text = "";
-                    deckPlayerTexts[2].text = "";
-                    deckPlayerTexts[3].text = "";
-                    break;
-                default:
-                    break;
-            }
+    private void ClearTexts(int player) {
+        for (int i = 0; i < PlayersPlaygroundContainers[player].PlayersPlaygroundTexts.Length; i++) {
+            PlayersPlaygroundContainers[player].PlayersPlaygroundTexts[i].text = "";
         }
-        else { // Clears Comp's texts
-            switch (textsToClear) {
-                case 1:
-                    deckCompTexts[0].text = "";
-                    break;
-                case 2:
-                    deckCompTexts[0].text = "";
-                    deckCompTexts[1].text = "";
-                    break;
-                case 3:
-                    deckCompTexts[0].text = "";
-                    deckCompTexts[1].text = "";
-                    deckCompTexts[2].text = "";
-                    break;
-                case 4:
-                    deckCompTexts[0].text = "";
-                    deckCompTexts[1].text = "";
-                    deckCompTexts[2].text = "";
-                    deckCompTexts[3].text = "";
-                    break;
-                default:
-                    break;
-            }
-        }       
     }
 
 
     //When called whoGetsIt gets the whole game deck
     public void TakeGameDeck(int whoGetsIt) {
-        if (whoGetsIt == 1) { //Player gets deck
-            while(gameDeck.Count > 0) {
-                playerDeck.Add(gameDeck[0]);
-                gameDeck.RemoveAt(0);
-            }
-            Debug.Log("Player " + whoGetsIt.ToString() + " took deck!");
-            playerDeck = ShuffleDeck(playerDeck);
-            whosTurnIsIt = 0; // Still Player's turn
-        }
-
-        if (whoGetsIt == 2) { //Computer gets deck
-            while (gameDeck.Count > 0) {
-                compDeck.Add(gameDeck[0]);
-                gameDeck.RemoveAt(0);
-            }
-            Debug.Log("Player " + whoGetsIt.ToString() + " took deck!");
-            compDeck = ShuffleDeck(compDeck);
-            whosTurnIsIt = 1;// Still Computer's turn
-        }
-        ClearAllTexts();
+        _playersCardsList[whoGetsIt].AddRange(_gameDeck);
+        _gameDeck.Clear();
+        
+        _whosTurnIsIt = whoGetsIt;
+        ClearAllPlayGroundTexts();
+        UpdateCounters();
     }
 
+    private int SpecialCardTurnsByCard(int card) {
+        switch (card) {
+            case 12:
+                return 2;
+            case 13:
+                return 3;
+            case 1:
+                return 4;
+            default:
+                return 1;
 
+        }
+    }
 
     /// One turn:
     ///  - Checking whos turn is it
@@ -219,263 +168,132 @@ public class GameHandler : MonoBehaviour
     ///     - SpecialCardCoroutine
     ///  - else: Use 1 card
     /// <param name="playerNum"> player number </param>
-    /// <param name="lastCardVal"> value of last card used </param>
-    public void GameTurn(int playerNum, int lastCardVal) {
-        if (playerNum == 1) { // Player turn
-            //Player 1 Took Jocker
-            if (lastCardVal == 11) {
-                StartCoroutine(SpecialCardCoroutine(1, 2, 1));
-            }
-
-            //Player 1 Took Ace
-            else if (lastCardVal == 1) {
-                StartCoroutine(SpecialCardCoroutine(1, 2, 4));
-            }
-
-
-            //Player 1 Took Queen
-            else if (lastCardVal == 12) {
-                StartCoroutine(SpecialCardCoroutine(1, 2, 2));
-            }
-            //Player 1 Took King
-            else if (lastCardVal == 13) {
-                StartCoroutine(SpecialCardCoroutine(1, 2, 3));
-            }
-
-            //Player 1 Took card between 2 and 10
-            else { 
-                UseCard(1);
-
-                deckPlayerTexts[0].text = gameDeck[0].ToString();
-                deckPlayerTexts[1].text = "";
-                deckPlayerTexts[2].text = "";
-                deckPlayerTexts[3].text = "";
-
-                whosTurnIsIt = 1;
-            }
-        }
-
-        else if ((playerNum == 2)) { //Computer turn
-            //Player 2 Took Jocker
-            if (lastCardVal == 11) {
-                StartCoroutine(SpecialCardCoroutine(2, 1, 1));
-            }
-
-            //Player 2 Took Ace
-            else if (lastCardVal == 1) {
-                StartCoroutine(SpecialCardCoroutine(2, 1, 4));
-
-            }
-
-            //Player 2 Took Queen
-            else if (lastCardVal == 12) {
-                StartCoroutine(SpecialCardCoroutine(2, 1, 2));
-            }
-
-            //Player 2 Took King
-            else if (lastCardVal == 13) {
-                StartCoroutine(SpecialCardCoroutine(2, 1, 3));
-            }
-
-            //Player 2 Took card between 2 and 10
-            else { 
-                UseCard(2);
-                deckCompTexts[0].text = gameDeck[0].ToString();
-                deckCompTexts[1].text = "";
-                deckCompTexts[2].text = "";
-                deckCompTexts[3].text = "";
-
-                whosTurnIsIt = 0;
-            }
+    public void GameTurn(int playerNum) {
+        ClearTexts(playerNum);
+        int nextPlayer = (playerNum + 1) % _playersCardsList.Count;
+        int prevPlayer = (playerNum - 1) < 0 ? _playersCardsList.Count - 1 : playerNum - 1;
+        if (LastCardVal == 1 || LastCardVal > 10) {
+            StartCoroutine(SpecialCardCoroutine(playerNum, prevPlayer, SpecialCardTurnsByCard(LastCardVal)));
+        } else {
+            UseCard(playerNum, 0);
+            _whosTurnIsIt = nextPlayer;
         }
     }
 
     //Updating counters
     private void UpdateCounters() {
-        counters[0].text = playerDeck.Count.ToString();
-        counters[1].text = compDeck.Count.ToString();
-        counters[2].text = gameDeck.Count.ToString();
+        for (int i = 0; i < PlayersCardsCountersTexts.Length; i++) {
+            PlayersCardsCountersTexts[i].text = _playersCardsList[i].Count.ToString();
+        }
+        GameDeckCardsCounterText.text = _gameDeck.Count.ToString();
 
-        if (whosTurnIsIt == 0) {
-            whosTurnText.text = "Player";
-        }
-        else if (whosTurnIsIt == 1) {
-            whosTurnText.text = "Computer";
-        }
+        WhosTurnText.text = "Player " + _whosTurnIsIt;
     }
 
     //Using one card (adding it to gameDeck and removing it from player's deck)
-    private void UseCard(int playerNum) {
-        if (playerNum == 1) {
-            gameDeck.Insert(0, playerDeck[0]);
-            Debug.Log("Player Used: " + playerDeck[0].ToString());
-            playerDeck.RemoveAt(0);
-
+    private void UseCard(int playerNum, int cardSeriesNum) {
+        if (playerNum > _playersCardsList.Count - 1) {
+            Debug.LogWarning("There is no such player: " + playerNum);
+            return;
         }
-        if (playerNum == 2) {
-            gameDeck.Insert(0, compDeck[0]);
-            Debug.Log("Computer Used: " + compDeck[0].ToString());
-            compDeck.RemoveAt(0);
-        }
-        CheckDuplicate();
-        
-    }
+        //TODO: check if has no cards (game over scenario)
+        _gameDeck.Insert(0, _playersCardsList[playerNum][0]);
+        Debug.Log(string.Format("Player {0} Used: {1}", playerNum, _playersCardsList[playerNum][0].ToString()));
+        _playersCardsList[playerNum].RemoveAt(0);
+        PlayersPlaygroundContainers[playerNum].PlayersPlaygroundTexts[cardSeriesNum].text = LastCard.ToString();
+        UpdateCounters();
 
-    //Check if two same cards used 
-    private void CheckDuplicate() {
-        int thisCard = 0;
-        int prevCard = 1;
-
-        //Getting cards' values of two last cards
-        if (gameDeck.Count > 1) {
-            thisCard = gameDeck[0].GetValue();
-            prevCard = gameDeck[1].GetValue();
-        }
-
-        // Two same cards! Someone will take the Deck
-        if (thisCard == prevCard) {
+        if (CheckDuplicate()) {
             StartCoroutine(DuplicationCoroutine());
         }
     }
 
-
-
-    private void Update() {
-        if (waitingForCoroutine == false) { // Checking if waiting for coroutine, if so-> don't get in
-            if (Input.GetKeyDown(KeyCode.Space) && (isGameStarted == false)) {
-                StartGame();
-                isGameStarted = true;
-            }
-
-            //Pressed A
-            if (Input.GetKeyDown(KeyCode.A) && (whosTurnIsIt == 0)) {
-               
-                //Shuffling Player Deck
-                playerDeck = ShuffleDeck(playerDeck);
-
-                int lastCard;
-                if (gameDeck.Count > 0) {
-                    lastCard = gameDeck[0].GetValue();
-                }
-                else {
-                    lastCard = 0; //Null card
-                }
-            
-
-                //Debug.Log("1: last card: " + lastCard);
-
-                GameTurn(1, lastCard);
-
-                
-            }
-
-
-            //Pressed S
-            if (Input.GetKeyDown(KeyCode.S) && (whosTurnIsIt == 1)) {
-                
-                //Shuffling Player Deck
-                compDeck = ShuffleDeck(compDeck);
-
-                int lastCard;
-                if (gameDeck.Count > 0) {
-                    lastCard = gameDeck[0].GetValue();
-                }
-                else {
-                    lastCard = 0; //Null card
-                }
-        
-                GameTurn(2, lastCard);
-
-          
-            }
+    //Check if two same cards used 
+    private bool CheckDuplicate() {
+        if(_gameDeck.Count < 2) {
+            return false;
         }
-        if (isGameStarted) {
-            UpdateCounters(); //Updating counters
-
-            //Check win condition
-            if (playerDeck.Count == 0 || compDeck.Count == 0) {
-                SceneManager.LoadScene("WinScene");
-            }
-        }  
+       
+        return LastCardVal == _gameDeck[1].GetValue();
     }
 
+    private void Update() {
+        if (_waitingForCoroutine == false) { // Checking if waiting for coroutine, if so-> don't get in
+            if (Input.GetKeyDown(KeyCode.Space) && (_isGameStarted == false)) {
+                StartGame();
+                _isGameStarted = true;
+            }
+            
+            //Pressed A
+            if (Input.GetKeyDown(KeyCode.A)) {
+                //Shuffling Player Deck
+                _playersCardsList[_whosTurnIsIt] = ShuffleDeck(_playersCardsList[_whosTurnIsIt]);
+
+                GameTurn(_whosTurnIsIt);
+                
+            }
+        }
+    }
+
+    private bool IsGameOver() {
+        bool retVal = false;
+        //is true if
+        //1. one player finished all his cards
+        //2. and it is his turn again
+
+                //SceneManager.LoadScene("WinScene");
+
+        return retVal;
+    }
 
     // for each card;
     // - Draw a card
     // - Check if larger than 11, if so- take deck
     // - if at end of loop, didn't take deck -> other player takes it
-    private IEnumerator SpecialCardCoroutine(int curPlayer, int otherPlayer, int numOfCardsToCheck) {
-        waitingForCoroutine = true;
+    private IEnumerator SpecialCardCoroutine(int curPlayer, int prevPlayer, int numOfCardsToCheck) {
+        _waitingForCoroutine = true;
 
         bool tookDeck = false;
-        Debug.Log("Start courtime: ");
+        Debug.Log("Start coroutine: ");
 
-        ClearTexts(curPlayer, 4);
-        if (curPlayer == 1) {
-            for (int i = 0; i < numOfCardsToCheck; i++) {
-                UseCard(curPlayer);
-                deckPlayerTexts[i].text = gameDeck[0].ToString();
-
-                if (gameDeck[0].GetValue() >= 11) {
-                    yield return new WaitForSeconds(1f);
-                    TakeGameDeck(curPlayer); // Player 1 gets the Deck
-                    tookDeck = true;
-                    break;
-                }
-                yield return new WaitForSeconds(0.2f);
+        for (int i = 0; i < numOfCardsToCheck; i++) {
+            UseCard(curPlayer, i);
+            if(CheckDuplicate()) {
+                break;
             }
-            if (tookDeck == false) {
+
+            //TODO: if game over scenario, break
+            if (_gameDeck[0].GetValue() >= 11) {
                 yield return new WaitForSeconds(1f);
-                TakeGameDeck(otherPlayer); // Player 2 gets the Deck
+                TakeGameDeck(curPlayer); // Player 1 gets the Deck
+                tookDeck = true;
+                break;
             }
+            yield return new WaitForSeconds(0.2f);
+        }
+        if (!tookDeck) {
+            yield return new WaitForSeconds(1f);
+            TakeGameDeck(prevPlayer); // Player 2 gets the Deck
         }
 
-
-
-
-        else { //cur player is 2
-            for (int i = 0; i < numOfCardsToCheck; i++) {
-                UseCard(curPlayer);
-                deckCompTexts[i].text = gameDeck[0].ToString();
-
-                if (gameDeck[0].GetValue() >= 11) {
-                    yield return new WaitForSeconds(1f);
-                    TakeGameDeck(curPlayer); // Player 2 gets the Deck
-                    tookDeck = true;
-                    break;
-                }
-                yield return new WaitForSeconds(0.2f);
-            }
-            if (tookDeck == false) {
-                yield return new WaitForSeconds(1f);
-                TakeGameDeck(otherPlayer); // Player 1 gets the Deck
-            }
-        }
-
-        waitingForCoroutine = false;
+        _waitingForCoroutine = false;
     }
 
 
 //If called, Duplication were found
 private IEnumerator DuplicationCoroutine() {
-        waitingForCoroutine = true;
+        _waitingForCoroutine = true;
         //yield on a new YieldInstruction that waits for 5 seconds.
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(1);
 
-        
         Debug.Log("Found Duplication!!!");
-        int rnd = Random.Range(0, 2);
+        int rnd = UnityEngine.Random.Range(0, _playersCardsList.Count);
         Debug.Log("Random Number between 0 to 1: " + rnd.ToString());
 
         //Player takes the deck
-        if (rnd == 0) {
-            TakeGameDeck(1);
-        }
+        TakeGameDeck(rnd);
         //Computer takes the deck
-        else {
-            TakeGameDeck(2);
-        }
-        waitingForCoroutine = false;
+        _waitingForCoroutine = false;
     }
 
 }
