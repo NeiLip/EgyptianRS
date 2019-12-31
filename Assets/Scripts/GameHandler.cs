@@ -236,20 +236,12 @@ public class GameHandler : MonoBehaviour
     }
 
     private void Update() {
-        if (!_waitingForCoroutine) { // Checking if waiting for coroutine, if so-> don't get in
-            if (Input.GetKeyDown(KeyCode.Space) && !_isGameStarted) {
-                StartGame();
-                _isGameStarted = true;
-            }
-            
-            //Pressed A
-            if (Input.GetKeyDown(KeyCode.A)) {
-                //Shuffling Player Deck
-                _playersCardsList[_whosTurnIsIt] = ShuffleDeck(_playersCardsList[_whosTurnIsIt]);
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            PlayTurnBtn();
+        }
 
-                GameTurn(_whosTurnIsIt);
-                
-            }
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            RestartGameBtn();
         }
     }
 
