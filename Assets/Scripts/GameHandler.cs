@@ -57,6 +57,8 @@ public class GameHandler : MonoBehaviour
 
     private bool _waitingForCoroutine; //If true, everything is disabled. If false, player can play a turn
 
+    private string _winningPlayer;
+
 
     //Initializig variables
     private void Awake() {
@@ -68,7 +70,7 @@ public class GameHandler : MonoBehaviour
         Debug.Log("!@! _playersCardsList.Count: " + _playersCardsList.Count);
         _gameDeck = new List<Card>();
         _whosTurnIsIt = 0;
-
+        _winningPlayer = "Player 1";
         _waitingForCoroutine = false;
     }
 
@@ -169,6 +171,13 @@ public class GameHandler : MonoBehaviour
     ///  - else: Use 1 card
     /// <param name="playerNum"> player number </param>
     public void GameTurn(int playerNum) {
+        //Checking winning condition
+        if (IsPlayerLost(playerNum)) {
+            GameOver();
+            return;
+        }
+
+
         ClearTexts(playerNum);
         int nextPlayer = (playerNum + 1) % _playersCardsList.Count;
         int prevPlayer = (playerNum - 1) < 0 ? _playersCardsList.Count - 1 : playerNum - 1;
@@ -196,7 +205,6 @@ public class GameHandler : MonoBehaviour
             Debug.LogWarning("There is no such player: " + playerNum);
             return;
         }
-        //TODO: check if has no cards (game over scenario)
         _gameDeck.Insert(0, _playersCardsList[playerNum][0]);
         Debug.Log(string.Format("Player {0} Used: {1}", playerNum, _playersCardsList[playerNum][0].ToString()));
         _playersCardsList[playerNum].RemoveAt(0);
@@ -235,15 +243,19 @@ public class GameHandler : MonoBehaviour
         }
     }
 
-    private bool IsGameOver() {
+    //If player playerNum lost
+    private bool IsPlayerLost(int playerNum) {
         bool retVal = false;
         //is true if
         //1. one player finished all his cards
         //2. and it is his turn again
 
                 //SceneManager.LoadScene("WinScene");
+        return (_whosTurnIsIt == playerNum && _playersCardsList[playerNum].Count == 0);
+    }
 
-        return retVal;
+    private void GameOver() {
+        SceneManager.LoadScene("WinScene");
     }
 
     // for each card;
@@ -257,12 +269,14 @@ public class GameHandler : MonoBehaviour
         Debug.Log("Start coroutine: ");
 
         for (int i = 0; i < numOfCardsToCheck; i++) {
+            if (IsPlayerLost(curPlayer)) {
+                GameOver();
+                break;
+            }
             UseCard(curPlayer, i);
             if(CheckDuplicate()) {
                 break;
             }
-
-            //TODO: if game over scenario, break
             if (_gameDeck[0].GetValue() >= 11) {
                 yield return new WaitForSeconds(1f);
                 TakeGameDeck(curPlayer); // Player 1 gets the Deck
