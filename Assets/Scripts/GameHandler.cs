@@ -59,19 +59,28 @@ public class GameHandler : MonoBehaviour
 
     private string _winningPlayer;
 
+    private bool _isGameRestarted;
+
 
     //Initializig variables
     private void Awake() {
+        _waitingForCoroutine = false;
+        InitializeStats();
+    }
+
+
+    private void InitializeStats() {
+        _isGameRestarted = true;
         _isGameStarted = false;
         _startGameDeck = new List<Card>();
         _playersCardsList = new List<List<Card>>();
         _playersCardsList.Add(new List<Card>());
         _playersCardsList.Add(new List<Card>());
-        Debug.Log("!@! _playersCardsList.Count: " + _playersCardsList.Count);
         _gameDeck = new List<Card>();
+
+
         _whosTurnIsIt = 0;
         _winningPlayer = "Player 1";
-        _waitingForCoroutine = false;
     }
 
 
@@ -93,6 +102,7 @@ public class GameHandler : MonoBehaviour
 
     //Building a new Deck
     private void BuildStartingDeck() {
+        _startGameDeck.Clear();
         for (int i = 0; i < _suits.Length; i++) { //For every type of suit (D\H\C\S)
             for (int j = 1; j < 14; j++) { //For each value (1-13)
                 Card card = new Card(j, _suits[i]); //Creating card
@@ -109,7 +119,6 @@ public class GameHandler : MonoBehaviour
         shuffeledGameDeck = ShuffleDeck(_startGameDeck);
 
         // Split deck into two decks (player and comp decks)
-        Debug.Log("!@! _playersCardsList.Count: " + _playersCardsList.Count);
         int cardsPerPlayer = Mathf.FloorToInt(TotalCards / _playersCardsList.Count);
 
         for (int i = 0; i < _playersCardsList.Count; i++) {
@@ -118,6 +127,7 @@ public class GameHandler : MonoBehaviour
             }
         }
 
+        _isGameStarted = true;
         ClearAllPlayGroundTexts();
     }
 
@@ -226,8 +236,8 @@ public class GameHandler : MonoBehaviour
     }
 
     private void Update() {
-        if (_waitingForCoroutine == false) { // Checking if waiting for coroutine, if so-> don't get in
-            if (Input.GetKeyDown(KeyCode.Space) && (_isGameStarted == false)) {
+        if (!_waitingForCoroutine) { // Checking if waiting for coroutine, if so-> don't get in
+            if (Input.GetKeyDown(KeyCode.Space) && !_isGameStarted) {
                 StartGame();
                 _isGameStarted = true;
             }
@@ -245,12 +255,6 @@ public class GameHandler : MonoBehaviour
 
     //If player playerNum lost
     private bool IsPlayerLost(int playerNum) {
-        bool retVal = false;
-        //is true if
-        //1. one player finished all his cards
-        //2. and it is his turn again
-
-                //SceneManager.LoadScene("WinScene");
         return (_whosTurnIsIt == playerNum && _playersCardsList[playerNum].Count == 0);
     }
 
@@ -266,7 +270,8 @@ public class GameHandler : MonoBehaviour
         _waitingForCoroutine = true;
 
         bool tookDeck = false;
-        Debug.Log("Start coroutine: ");
+
+        float startTime;
 
         for (int i = 0; i < numOfCardsToCheck; i++) {
             if (IsPlayerLost(curPlayer)) {
@@ -277,16 +282,42 @@ public class GameHandler : MonoBehaviour
             if(CheckDuplicate()) {
                 break;
             }
+
             if (_gameDeck[0].GetValue() >= 11) {
-                yield return new WaitForSeconds(1f);
+
+                startTime = Time.time;
+                while (!_isGameRestarted && Time.time - startTime < 1) {
+                    yield return null;
+                }
+                if (_isGameRestarted) {
+                    _waitingForCoroutine = false;
+                    yield break;
+                }
+
+
                 TakeGameDeck(curPlayer); // Player 1 gets the Deck
                 tookDeck = true;
                 break;
             }
-            yield return new WaitForSeconds(0.2f);
+
+            startTime = Time.time;
+            while (!_isGameRestarted && Time.time - startTime < 1) {
+                yield return null;
+            }
+            if (_isGameRestarted) {
+                _waitingForCoroutine = false;
+                yield break;
+            }
         }
         if (!tookDeck) {
-            yield return new WaitForSeconds(1f);
+            startTime = Time.time;
+            while (!_isGameRestarted && Time.time - startTime < 1) {
+                yield return null;
+            }
+            if (_isGameRestarted) {
+                _waitingForCoroutine = false;
+                yield break;
+            }
             TakeGameDeck(prevPlayer); // Player 2 gets the Deck
         }
 
@@ -294,20 +325,66 @@ public class GameHandler : MonoBehaviour
     }
 
 
-//If called, Duplication were found
-private IEnumerator DuplicationCoroutine() {
-        _waitingForCoroutine = true;
+    //If called, Duplication were found
+    private IEnumerator DuplicationCoroutine() {
+            _waitingForCoroutine = true;
         //yield on a new YieldInstruction that waits for 5 seconds.
-        yield return new WaitForSeconds(1);
-
+        float startTime = Time.time;
+        while (!_isGameRestarted && Time.time - startTime < 1) {
+            yield return null;
+        }
+        if(_isGameRestarted) {
+            _waitingForCoroutine = false;
+            yield break;
+        }
+ 
         Debug.Log("Found Duplication!!!");
-        int rnd = UnityEngine.Random.Range(0, _playersCardsList.Count);
-        Debug.Log("Random Number between 0 to 1: " + rnd.ToString());
+            int rnd = UnityEngine.Random.Range(0, _playersCardsList.Count);
+            Debug.Log("Random Number between 0 to 1: " + rnd.ToString());
 
-        //Player takes the deck
-        TakeGameDeck(rnd);
-        //Computer takes the deck
-        _waitingForCoroutine = false;
+            //Player takes the deck
+            TakeGameDeck(rnd);
+            //Computer takes the deck
+            _waitingForCoroutine = false;
+        }
+
+
+
+
+    ///////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
+    /*                BUTTONS HANDLER                    */
+
+    public void StartTheGameBtn() {
+        if (!_waitingForCoroutine && !_isGameStarted) {
+            StartGame();
+        }
+    }
+
+    public void PlayTurnBtn() {
+        if (_isGameStarted) {
+
+            if (!_waitingForCoroutine) {
+                _isGameRestarted = false;
+                _playersCardsList[_whosTurnIsIt] = ShuffleDeck(_playersCardsList[_whosTurnIsIt]);
+
+                GameTurn(_whosTurnIsIt);
+            }
+        }
+ 
+    }
+
+    public void RestartGameBtn() {
+        InitializeStats();
+        ClearAllPlayGroundTexts();
+        if (!_waitingForCoroutine) {
+            _isGameRestarted = false;
+        }
+        StartGame();
+        UpdateCounters();
+
+        Debug.Log("GAME RESTARTED");
     }
 
 }

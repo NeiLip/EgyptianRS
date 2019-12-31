@@ -6,28 +6,32 @@ using UnityEngine.UI;
 
 public class MouseOnBtn : MonoBehaviour
 {
-    public GameObject button;
+    public Button button;
 
-    //public void OnMouseDown() {
-        
+    //void Start() {
+    //    Button btn = button.GetComponent<Button>();
+    //    btn.onClick.AddListener(MouseClick); // Should I add a listener?
+    //}
+
+    //private void OnMouseEnter() {
+    //      Debug.Log("Mouse Over!!!sfddsf");
+    //    //button.GetComponent<SpriteRenderer>().enabled = true;
+    //}
+
+
+    // private void MouseClick() {
+    //    if (GameHandler.) {
+
+    //    }
     //    switch (button.name) {
-    //        case "PlayerBtn":
-               
-    //            break;
-    //        case "StartBtn":
-    //            GameHandler.StartGame();
-    //            break;
+    //        case "BeginGameBtn":
     //        default:
     //            break;
     //    }
+
     //}
 
-    private void OnMouseEnter() {
-          Debug.Log("Mouse Over!!!sfddsf");
-        //button.GetComponent<SpriteRenderer>().enabled = true;
-    }
-
-    //private void OnMouseExit() {
-    //    button.GetComponent<SpriteRenderer>().enabled = false;
-    //}
+    ////private void OnMouseExit() {
+    ////    button.GetComponent<SpriteRenderer>().enabled = false;
+    ////}
 }
