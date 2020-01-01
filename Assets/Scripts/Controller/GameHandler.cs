@@ -171,9 +171,6 @@ public class GameHandler : MonoBehaviour
         }
     }
 
-    //Updating counters
-    
-
     //Using one card (adding it to gameDeck and removing it from player's deck)
     private void UseCard(int playerNum, int locationInPlayground) {
         if (playerNum > PlayerAmount - 1) {
@@ -185,7 +182,9 @@ public class GameHandler : MonoBehaviour
 
         for (int i = 0; i < _gameData.DeckCards.Count; i++) {
             if (_gameData.DeckCards[i].OwnerPlayerID == playerNum && _gameData.DeckCards[i].Location == Card.Locations.Playground) {
-                _gameData.DeckCards[i].Location = Card.Locations.Deck;
+                if (locationInPlayground == 0) {
+                    _gameData.DeckCards[i].Location = Card.Locations.Deck;
+                }
             }
         }
        
