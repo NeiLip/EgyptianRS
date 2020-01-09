@@ -9,8 +9,6 @@ public class GameHandler : MonoBehaviour
 {
 
     public MainGameView MainGameViewRef;
-    //STATICs HERE:
-    //private static int[] startValues = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
     public int PlayerAmount = 2;
     private string[] _suits = { "D", "H", "C", "S" };
     private const int CARDS_PER_SUIT = 13;
@@ -35,10 +33,7 @@ public class GameHandler : MonoBehaviour
         _waitingForCoroutine = false;
         InitializeGameData();
 
-        //Getting winning counter
-        //if (GameStats.WinningCounters == null) {
-        //    GameStats.WinningCounters = new int[2];
-        //}
+      
         for (int i = 0; i < PlayerAmount; i++) {
             if (PlayerPrefs.HasKey(i.ToString())) {
                 GameStats.WinningCounters[i] = PlayerPrefs.GetInt(i.ToString());
@@ -97,24 +92,6 @@ public class GameHandler : MonoBehaviour
         _isGameStarted = true;
         MainGameViewRef.UpdateView(_gameData);
     }
-
- 
-    // Clears Player's and Computer's playground
-    //private void ClearAllPlayGroundTexts() {
-    //    for (int i = 0; i < PlayersPlaygroundContainers.Length; i++) {
-    //        for (int j = 0; j < PlayersPlaygroundContainers[i].PlayersPlaygroundTexts.Length; j++) {
-    //            PlayersPlaygroundContainers[i].PlayersPlaygroundTexts[j].text = "";
-    //        }
-    //    }
-    //}
-    /// Clears specific texts
-    /// <param name="player"> player to clear his playground texts </param>
-    //private void ClearTexts(int player) {
-    //    for (int i = 0; i < PlayersPlaygroundContainers[player].PlayersPlaygroundTexts.Length; i++) {
-    //        PlayersPlaygroundContainers[player].PlayersPlaygroundTexts[i].text = "";
-    //    }
-    //}
-
 
     //When called whoGetsIt gets the whole game deck
     public void TakeGameDeck(int whoGetsIt) {
@@ -194,16 +171,12 @@ public class GameHandler : MonoBehaviour
         card.IndexInPlayground = locationInPlayground;
         card.Location = Card.Locations.Playground;
         _gameData.DeckCards.Insert(0, card);
-        Debug.Log("!@! deckcard[0] location: " + _gameData.DeckCards[0].Location);
         Debug.Log(string.Format("Player {0} Used: {1}", playerNum, _gameData.PlayersCards[playerNum][0]));
         _gameData.PlayersCards[playerNum].RemoveAt(0);
-        //PlayersPlaygroundContainers[playerNum].PlayersPlaygroundTexts[cardSeriesNum].text = _gameData.LastCard.ToString();
-        //UpdateCounters();
         MainGameViewRef.UpdateView(_gameData);
         if (CheckDuplicate()) {
             StartCoroutine(DuplicationCoroutine());
         }
-        Debug.Log("!@! deckcard[0] location: " + _gameData.DeckCards[0].Location);
     }
 
     //Check if two same cards used 
@@ -348,13 +321,10 @@ public class GameHandler : MonoBehaviour
 
     public void RestartGameBtn() {
         InitializeGameData();
-      //  ClearAllPlayGroundTexts();
         if (!_waitingForCoroutine) {
             _isGameRestarted = false;
         }
         StartGame();
-     //   UpdateCounters();
-
         Debug.Log("GAME RESTARTED");
     }
 
